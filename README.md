@@ -42,6 +42,7 @@ grepo update
 | `grepo build` | Full parse + graph build (parser → nodes/edges → flows → communities → FTS5) |
 | `grepo update` | Incremental update (git-aware) |
 | `grepo postprocess` | Re-run flows/communities/FTS on an existing graph without re-parsing |
+| `grepo embed` | Compute vector embeddings (enables semantic search) — requires `grepo[embeddings]` |
 | `grepo watch` | Watch filesystem and update on save |
 | `grepo status` | Show graph stats |
 | `grepo serve` | Run MCP server (stdio) |
@@ -56,23 +57,20 @@ grepo update
 
 `grepo build` populates the **structural** layer: nodes, edges (CALLS, IMPORTS_FROM, INHERITS, CONTAINS, TESTED_BY), flows, communities, and an FTS5 keyword index. That's enough for blast-radius, untested-code, and most code-review queries — no ML dependency.
 
-To also enable **semantic search** (find code by intent, not exact words), compute vector embeddings for every node. There is no CLI command for this — embeddings are computed on demand via the MCP tool `embed_graph`, invoked from inside Claude Code / Cursor:
+To also enable **semantic search** (find code by intent, not exact words), compute vector embeddings for every node:
+
+```bash
+grepo embed                                  # local model (default: all-MiniLM-L6-v2)
+grepo embed --model sentence-transformers/all-mpnet-base-v2   # pick a different model
+```
+
+`grepo embed` is incremental — it only embeds nodes that are new or whose content has changed since the last run. Switching the model (via `--model` or `CRG_EMBEDDING_MODEL`) re-embeds everything automatically.
+
+The same operation is also exposed as an MCP tool (`embed_graph`), so you can ask Claude Code / Cursor to run it without leaving the editor:
 
 ```
 You: Please run embed_graph on this repo.
 Claude: [calls the embed_graph MCP tool — embeds new/changed nodes]
-```
-
-You can also call it directly from Python:
-
-```python
-from grepo.embeddings import EmbeddingStore, embed_all_nodes
-from grepo.graph import GraphStore
-from grepo.incremental import get_db_path
-
-root = "/path/to/repo"
-db = get_db_path(root)
-embed_all_nodes(GraphStore(db), EmbeddingStore(db))
 ```
 
 After embeddings exist, the `search_code` MCP tool returns hybrid results (FTS5 keyword score + cosine similarity), so `search_code("user authentication")` will surface `verify_credentials()` even though the words don't match.

@@ -5,6 +5,7 @@ Usage:
     grepo init
     grepo build [--base BASE]
     grepo update [--base BASE]
+    grepo embed [--model MODEL]
     grepo watch
     grepo status
     grepo serve
@@ -87,6 +88,7 @@ def _print_banner() -> None:
     {g}unregister{r}  Remove a repository from the registry
     {g}repos{r}       List registered repositories
     {g}postprocess{r} Run post-processing {d}(flows, communities, FTS){r}
+    {g}embed{r}       Compute embeddings {d}(enables semantic search){r}
     {g}eval{r}        Run evaluation benchmarks
     {g}serve{r}       Start MCP server
 
@@ -258,6 +260,19 @@ def main() -> None:
     pp_cmd.add_argument("--no-flows", action="store_true", help="Skip flow detection")
     pp_cmd.add_argument("--no-communities", action="store_true", help="Skip community detection")
     pp_cmd.add_argument("--no-fts", action="store_true", help="Skip FTS rebuild")
+
+    # embed
+    embed_cmd = sub.add_parser(
+        "embed",
+        help="Compute vector embeddings to enable semantic search "
+             "(requires grepo[embeddings])",
+    )
+    embed_cmd.add_argument("--repo", default=None, help="Repository root (auto-detected)")
+    embed_cmd.add_argument(
+        "--model", default=None,
+        help="Embedding model name (HuggingFace ID or local path). "
+             "Falls back to CRG_EMBEDDING_MODEL, then all-MiniLM-L6-v2.",
+    )
 
     # watch
     watch_cmd = sub.add_parser("watch", help="Watch for changes and auto-update")
@@ -455,6 +470,19 @@ def main() -> None:
             print(f"Post-processing: {', '.join(parts) or 'done'}")
         finally:
             store.close()
+        return
+
+    if args.command == "embed":
+        repo_root = Path(args.repo) if args.repo else find_project_root()
+        from .tools.docs import embed_graph
+        result = embed_graph(repo_root=str(repo_root), model=args.model)
+        if result.get("status") == "error":
+            logging.error(result.get("error", "embedding failed"))
+            sys.exit(1)
+        print(
+            f"Embedded {result['newly_embedded']} new node(s). "
+            f"Total embeddings: {result['total_embeddings']}."
+        )
         return
 
     if args.command in ("update", "detect-changes"):
