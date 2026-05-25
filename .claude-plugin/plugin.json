@@ -1,0 +1,21 @@
+{
+  "name": "grepo",
+  "description": "Persistent incremental knowledge graph for token-efficient, context-aware code reviews with Claude Code",
+  "version": "0.1.0",
+  "author": {
+    "name": "Ritik Kumar",
+    "email": "ritik.kumar@perforce.com",
+    "url": "https://github.com/rskumar457"
+  },
+  "homepage": "https://grepo.dev",
+  "repository": "https://github.com/rskumar457/grepo",
+  "license": "MIT",
+  "keywords": ["code-review", "knowledge-graph", "incremental", "tree-sitter", "mcp", "claude-code"],
+  "mcpServers": {
+    "grepo": {
+      "command": "uvx",
+      "args": ["grepo", "serve"]
+    }
+  },
+  "skills": "./skills/"
+}

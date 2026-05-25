@@ -1,0 +1,311 @@
+{
+  "name": "grepo",
+  "displayName": "Grepo",
+  "description": "Visualize code dependencies, blast radius, and review context from your grepo database directly in VS Code.",
+  "version": "0.1.0",
+  "publisher": "rskumar457",
+  "license": "MIT",
+  "icon": "media/icons/icon.png",
+  "keywords": [
+    "code analysis",
+    "graph",
+    "visualization",
+    "dependencies",
+    "blast radius",
+    "code review",
+    "tree-sitter"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rskumar457/grepo"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "extensionKind": [
+    "workspace"
+  ],
+  "categories": [
+    "Visualization",
+    "Other"
+  ],
+  "activationEvents": [
+    "workspaceContains:.grepo/graph.db",
+    "onCommand:grepo.*",
+    "onView:grepo.*"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "grepo",
+          "title": "Grepo",
+          "icon": "media/icons/graph.svg"
+        }
+      ]
+    },
+    "views": {
+      "grepo": [
+        {
+          "id": "grepo.codeGraph",
+          "name": "Code Graph"
+        },
+        {
+          "id": "grepo.blastRadius",
+          "name": "Blast Radius"
+        },
+        {
+          "id": "grepo.stats",
+          "name": "Stats"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "grepo.showBlastRadius",
+        "title": "Grepo: Show Blast Radius",
+        "icon": "$(pulse)"
+      },
+      {
+        "command": "grepo.findCallers",
+        "title": "Grepo: Find Callers",
+        "icon": "$(references)"
+      },
+      {
+        "command": "grepo.findTests",
+        "title": "Grepo: Find Tests",
+        "icon": "$(beaker)"
+      },
+      {
+        "command": "grepo.queryGraph",
+        "title": "Grepo: Query Graph",
+        "icon": "$(symbol-keyword)"
+      },
+      {
+        "command": "grepo.findCallees",
+        "title": "Grepo: Find Callees",
+        "icon": "$(call-outgoing)"
+      },
+      {
+        "command": "grepo.findLargeFunctions",
+        "title": "Grepo: Find Large Functions",
+        "icon": "$(warning)"
+      },
+      {
+        "command": "grepo.showGraph",
+        "title": "Grepo: Show Graph",
+        "icon": "$(type-hierarchy)"
+      },
+      {
+        "command": "grepo.search",
+        "title": "Grepo: Search",
+        "icon": "$(search)"
+      },
+      {
+        "command": "grepo.reviewChanges",
+        "title": "Grepo: Review Changes",
+        "icon": "$(git-compare)"
+      },
+      {
+        "command": "grepo.embedGraph",
+        "title": "Grepo: Compute Embeddings",
+        "icon": "$(sparkle)"
+      },
+      {
+        "command": "grepo.watchGraph",
+        "title": "Grepo: Watch Mode",
+        "icon": "$(eye)"
+      },
+      {
+        "command": "grepo.buildGraph",
+        "title": "Grepo: Build Graph",
+        "icon": "$(database)"
+      },
+      {
+        "command": "grepo.updateGraph",
+        "title": "Grepo: Update Graph",
+        "icon": "$(sync)"
+      }
+    ],
+    "menus": {
+      "scm/title": [
+        {
+          "command": "grepo.reviewChanges",
+          "group": "navigation",
+          "when": "scmProvider == git"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "grepo.showBlastRadius",
+          "when": "viewItem =~ /node-/",
+          "group": "grepo@1"
+        },
+        {
+          "command": "grepo.findCallers",
+          "when": "viewItem =~ /node-/",
+          "group": "grepo@2"
+        },
+        {
+          "command": "grepo.findCallees",
+          "when": "viewItem =~ /node-/",
+          "group": "grepo@3"
+        },
+        {
+          "command": "grepo.findTests",
+          "when": "viewItem =~ /node-/",
+          "group": "grepo@4"
+        },
+        {
+          "command": "grepo.showGraph",
+          "when": "viewItem =~ /node-/",
+          "group": "grepo@5"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Grepo",
+      "properties": {
+        "grepo.cliPath": {
+          "type": "string",
+          "default": "",
+          "scope": "machine",
+          "description": "Path to the grepo CLI binary. Leave empty to use the bundled version or the one found on PATH."
+        },
+        "grepo.autoUpdate": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically update the graph database when files are saved."
+        },
+        "grepo.blastRadiusDepth": {
+          "type": "number",
+          "default": 2,
+          "minimum": 1,
+          "maximum": 10,
+          "description": "Maximum depth for blast radius traversal."
+        },
+        "grepo.graphTheme": {
+          "type": "string",
+          "default": "auto",
+          "enum": [
+            "auto",
+            "light",
+            "dark"
+          ],
+          "description": "Color theme for the graph visualization. 'auto' follows the VS Code theme."
+        },
+        "grepo.treeView.showFunctions": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show function nodes in the tree view."
+        },
+        "grepo.treeView.showClasses": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show class nodes in the tree view."
+        },
+        "grepo.treeView.showFiles": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show file nodes in the tree view."
+        },
+        "grepo.treeView.showTypes": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show type nodes in the tree view."
+        },
+        "grepo.treeView.showTests": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show test nodes in the tree view."
+        },
+        "grepo.graph.defaultEdges": {
+          "type": "array",
+          "default": [
+            "CALLS",
+            "IMPORTS_FROM",
+            "INHERITS",
+            "IMPLEMENTS",
+            "TESTED_BY",
+            "DEPENDS_ON"
+          ],
+          "items": {
+            "type": "string",
+            "enum": [
+              "CALLS",
+              "IMPORTS_FROM",
+              "INHERITS",
+              "IMPLEMENTS",
+              "CONTAINS",
+              "TESTED_BY",
+              "DEPENDS_ON"
+            ]
+          },
+          "description": "Edge types shown by default in the graph visualization."
+        },
+        "grepo.graph.maxNodes": {
+          "type": "number",
+          "default": 500,
+          "minimum": 10,
+          "maximum": 5000,
+          "description": "Maximum number of nodes to display in the graph visualization."
+        }
+      }
+    },
+    "walkthroughs": [
+      {
+        "id": "grepo.welcome",
+        "title": "Get Started with Grepo",
+        "description": "Build a code graph and explore your codebase visually.",
+        "steps": [
+          {
+            "id": "grepo.welcome.install",
+            "title": "Install the CLI",
+            "description": "Install the grepo CLI tool to build your graph database.\n\n[Install CLI](command:grepo.walkthrough.install)",
+            "media": {
+              "markdown": "media/walkthrough/install.md"
+            }
+          },
+          {
+            "id": "grepo.welcome.build",
+            "title": "Build Your Graph",
+            "description": "Run the build command to analyze your codebase and create a graph database.\n\n[Build Graph](command:grepo.buildGraph)",
+            "media": {
+              "markdown": "media/walkthrough/build.md"
+            }
+          },
+          {
+            "id": "grepo.welcome.explore",
+            "title": "Explore the Graph",
+            "description": "Open the Grepo panel in the activity bar to explore your code's structure, blast radius, and review context.\n\n[Open Grepo](command:grepo.walkthrough.explore)",
+            "media": {
+              "markdown": "media/walkthrough/explore.md"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "scripts": {
+    "compile": "node esbuild.mjs",
+    "watch": "node esbuild.mjs --watch",
+    "package": "vsce package",
+    "lint": "tsc --noEmit",
+    "test": "node --experimental-vm-modules node_modules/@vscode/test-electron/out/runTest.js"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.8",
+    "@types/d3": "^7.4.3",
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.85.0",
+    "@vscode/test-electron": "^2.3.8",
+    "@vscode/vsce": "^2.22.0",
+    "esbuild": "^0.20.0",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.0.0",
+    "d3": "^7.9.0"
+  }
+}

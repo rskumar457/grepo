@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "grepo": {
+      "command": "uvx",
+      "args": ["grepo", "serve"]
+    }
+  }
+}
